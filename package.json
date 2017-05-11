@@ -1,0 +1,22 @@
+{
+  "name": "beam-interactive-electron-quickstart",
+  "version": "1.0.0",
+  "description": "A minimal Beam Interactive2 Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "",
+  "keywords": [],
+  "author": "",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "~1.6.2"
+  },
+  "dependencies": {
+    "beam-interactive-node2": "~1.0.0",
+    "electron-oauth2": "^2.4.1",
+    "node-json-db": "^0.7.3",
+    "ws": "^2.3.1"
+  }
+}

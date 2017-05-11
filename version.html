@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Game Configuration</title>
+    <link rel="stylesheet" href="./inc/w3.css">
+</head>
+
+<body>
+    <header class='w3-container w3-teal'>
+        <h1>Interactive Game Configuration</h1>
+    </header>
+    <div class='w3-container w3-white'>
+        <p>Please visit <a href='https://beam.pro/i/studio'>https://beam.pro/i/studio</a> and create a new game, then
+            enter your Version ID here to save them in the configuration.</p>
+    </div>
+    <form class='w3-container w3-white'>
+        <label class="w3-text-teal">Version ID</label>
+        <input id="versionID" class="w3-input w3-border w3-light-grey" type="password">
+
+        <button id="saveButton" class="w3-btn w3-blue-grey">Save</button>
+    </form>
+
+
+    <!-- Insert this line above script imports  -->
+    <script>
+        if (typeof module === 'object') { window.module = module; module = undefined; }
+    </script>
+
+    <!-- normal script imports etc  -->
+    <script src="plugin/jquery-3.1.1.slim.min.js"></script>
+    <script>
+        // You can also require other files to run in this process
+        require('./version-renderer.js');
+    </script>
+    <!-- Insert this line after script imports -->
+    <script>
+        if (window.module) module = window.module;
+    </script>
+
+
+</body>
+
+
+</html>
