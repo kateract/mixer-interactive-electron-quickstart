@@ -4,7 +4,8 @@
   "description": "A minimal Beam Interactive2 Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "rebuild": "npm rebuild --runtime=electron --target=1.6.6 --disturl=https://atom.io/download/atom-shell --abi=51"
   },
   "repository": "",
   "keywords": [],

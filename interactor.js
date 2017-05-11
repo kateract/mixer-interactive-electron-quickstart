@@ -55,9 +55,9 @@ ipcMain.on('subscribeToPushers', (event) => {
 // client.on('error', (err) => console.log(err));
 
 //recieve a connect to interactive request
-ipcMain.on('connectInteractive', (event, token) => { connectInteractive(event, token)});
+ipcMain.on('connectInteractive', (event, token) => { connectInteractive(event, token) });
 
-function connectInteractive(event, token){
+function connectInteractive(event, token) {
     getGameVersionFromDB().then((versionID) => {
         client.open({
             authToken: token,
@@ -66,7 +66,7 @@ function connectInteractive(event, token){
             .then(() => {
                 client.synchronizeScenes()
                     .then((res) => { return client.ready(true) })
-                    .then(() => setupDefaultBoard())
+                    .then(() => setupBoard('default', defaultButtons))
                     .then((controls) => {
                         event.sender.send('interactiveConnectionEstablished')
                     })
@@ -77,14 +77,14 @@ function connectInteractive(event, token){
 
 };
 
+//default beam board sizes
 const boardSize = [
     { size: 'large', dimensions: { x: 80, y: 20 } },
     { size: 'medium', dimensions: { x: 45, y: 25 } },
     { size: 'small', dimensions: { x: 30, y: 40 } }
 ]
-// amount: # of buttons
-// width: width of buttons
-// height: height of buttons
+
+//this will basically reflow your buttons for you if you don't want to create your own position array
 function flowControls(amount, width, height) {
 
     var positions = [];
@@ -138,35 +138,17 @@ function makeButtons(buttons) {
     return controls;
 }
 
-var defaultButtons = {
-    names: ['Button 1', 'Button 2', 'Button 3', 'Button 4', 'Button 5'],
-    cooldowns: ['1000', '1000', '1000', '1000', '1000']
 
-}
-
-function setupDefaultBoard() {
+function setupBoard(sceneID, buttons) {
     return new Promise((resolve, reject) => {
-        const scene = client.state.getScene('default');
+        const scene = client.state.getScene(sceneID);
         scene.deleteAllControls();
-        scene.createControls(makeButtons(defaultButtons))
+        scene.createControls(makeButtons(buttons))
             .then(controls => {
                 controls.forEach((control) => {
                     control.on('mousedown', (inputEvent, participant) => {
                         //set a cooldown
-                        let id = parseInt(inputEvent.input.controlID);
-                        control.setCooldown(defaultButtons.cooldowns[id])
-                            .then(() => {
-
-                                console.log(`${participant.username} pushed ${inputEvent.input.controlID}`);
-
-                                if (inputEvent.transactionID) {
-                                    client.captureTransaction(inputEvent.transactionID)
-                                        .then(() => {
-                                            console.log(`Charged ${participant.username} ${control.cost} sparks!`);
-                                        }, (err) => reject(err));
-                                }
-                                pushSubscribers.forEach((sub) => sub.send('buttonPush', { participant: participant, id: id }));
-                            }, (err) => { reject(err) });
+                        handleControl(buttons, participant, control, inputEvent.transactionID).then()
                     });
                 });
                 resolve(controls);
@@ -175,6 +157,28 @@ function setupDefaultBoard() {
     });
 }
 
+//function to handle button events
+function handleControl(buttons, participant, control, transactionID) {
+    return new Promise((resolve, reject) => {
+        control.setCooldown(buttons.cooldowns ? buttons.cooldowns[control.controlID] : 1000)
+            .then(() => {
+                console.log(`${participant.username} pushed ${control.controlID}`);
+
+                // this will notify windows of button pushes so you can give graphical feedback
+                pushSubscribers.forEach((sub) => sub.send('buttonPush', { participant: participant, id: control.controlID }));
+
+            }, (err) => { reject(err) });
+
+        if (transactionID) {
+            client.captureTransaction(transactionID)
+                .then(() => {
+                    console.log(`Charged ${participant.username} ${control.cost} sparks!`);
+                }, (err) => reject(err));
+        }
+
+        resolve();
+    });
+}
 
 function getGameVersionFromDB() {
     return new Promise((resolve, reject) => {
