@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Oauth Client Configuration</title>
-    <link rel="stylesheet" href="./inc/w3.css">
+    <link rel="stylesheet" href="../inc/w3.css">
 </head>
 
 <body>
@@ -15,7 +15,7 @@
         <p>Please visit <a href='https://dev.beam.pro/oauth'>https://dev.beam.pro/oauth</a> and create a new Oauth Client, then
             enter your ID and secret here to save them in the configuration.</p>
     </div>
-    <form class='w3-container w3-white'>
+    <div class='w3-container w3-white'>
         <label class="w3-text-teal">Client ID</label>
         <input id="clientID" class="w3-input w3-border w3-light-grey" type="password">
 
@@ -23,7 +23,7 @@
         <input id="clientSecret" class="w3-input w3-border w3-light-grey" type="password">
 
         <button id="saveButton" class="w3-btn w3-blue-grey">Save</button>
-    </form>
+    </div>
 
 
     <!-- Insert this line above script imports  -->
@@ -32,7 +32,7 @@
     </script>
 
     <!-- normal script imports etc  -->
-    <script src="plugin/jquery-3.1.1.slim.min.js"></script>
+    <script src="../plugin/jquery-3.1.1.slim.min.js"></script>
     <script>
         // You can also require other files to run in this process
         require('./oauth-renderer.js');

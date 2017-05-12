@@ -1,0 +1,10 @@
+{
+    "OauthAuthentication": {
+        "clientId": "cat",
+        "clientSecret": "hat",
+        "authorizationUrl": "https://beam.pro/oauth/authorize",
+        "tokenUrl": "https://beam.pro/api/v1/oauth/token",
+        "useBasicAuthorizationHeader": false,
+        "redirectUri": "http://localhost"
+    }
+}

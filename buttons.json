@@ -1,37 +1,29 @@
 {
-    "defaultButtons": {
-        "names": [
-            "Button 1",
-            "Button 2",
-            "Button 3",
-            "Button 4",
-            "Button 5"
-        ],
-        "cooldowns": [
-            1000,
-            1000,
-            1000,
-            1000,
-            1000
-        ]
-    },
-    "positionDefined": {        
-        "names": [
-            "Button 1",
-            "Button 2",
-            "Button 3",
-            "Button 4",
-            "Button 5"
-        ],
-        "cooldowns": [
-            1000,
-            1000,
-            1000,
-            1000,
-            1000
-        ],
-        "positions":[
-            [ ]
-        ]
+    "defaultButtons": [
+        {
+            "name":"Button 1",
+            "cooldown": 1000,
+            "cost": 100
+        },
+        {
+            "name":"Button 2",
+            "cooldown": 1000,
+            "cost": 100
+        },
+        {
+            "name":"Button 3",
+            "cooldown": 1000,
+            "cost": 100
+        },
+        {
+            "name":"Button 4",
+            "cooldown": 1000,
+            "cost": 100
+        },
+        {
+            "name":"Button 5",
+            "cooldown": 1000,
+            "cost": 100
         }
+    ]
 }

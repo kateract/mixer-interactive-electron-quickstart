@@ -13,10 +13,10 @@ const delay = interactive.delay;
 var buttonDef;
 fs.readFile('./buttons.json', (err, data) => {
     if (err) console.log(err);
-    buttonDef = JSON.parse(data);    
+    buttonDef = JSON.parse(data.toString());    
 })
 
-var db = new JsonDB("GameData", true, true) // TODO: set human readable to false
+var db = new JsonDB("./data/GameData", true, true) // TODO: set human readable to false
 
 //set web socket for interactive client
 interactive.setWebSocket(ws);
@@ -27,125 +27,33 @@ const client = new interactive.GameClient();
 //catch any client errors
 client.on('error', (err) => console.log('error:', err));
 
-//console log joining participants
-var participants = [];
-client.state.on('participantJoin', (participant) => {
-    participants.push(participant);
-    console.log(`${participant.username}(${participant.sessionID}) Joined`);
-});
-
-//console log leaving participants
-client.state.on('participantLeave', (sessionID) => {
-    console.log(`${participants.find((p) => p.sessionID == sessionID).username} Left`);
-    participants.splice(participants.findIndex((p) => p.sessionID == sessionID), 1);
-});
-
-//add events for windows that want to subscribe
-ipcMain.on('participantSubscribe', (event) => {
-    client.state.on('participantJoin', (participant) => {
-        event.sender.send('participantJoin', participant);
-    });
-
-    client.state.on('participantLeave', (sessionID) => {
-        event.sender.send('participantLeave', sessionID);
-    });
-})
-
-var pushSubscribers = [];
-ipcMain.on('subscribeToPushers', (event) => {
-    pushSubscribers.push(event.sender);
-})
-
-// These can be un-commented to see the raw JSON messages under the hood
-// client.on('message', (err) => console.log('<<<', err));
-// client.on('send', (err) => console.log('>>>', err));
-// client.on('error', (err) => console.log(err));
 
 //recieve a connect to interactive request
-ipcMain.on('connectInteractive', (event, token) => { connectInteractive(event, token) });
+ipcMain.on('connectInteractive', (event, token) => { connectInteractive(event.sender, token) });
 
-function connectInteractive(event, token) {
-    getGameVersionFromDB().then((versionID) => {
-        client.open({
-            authToken: token,
-            versionId: versionID
-        })
-            .then(() => {
-                client.synchronizeScenes()
-                    .then((res) => { return client.ready(true) })
-                    .then(() => setupBoard('default', buttonDef.defaultButtons))
-                    .then((controls) => {
-                        event.sender.send('interactiveConnectionEstablished')
-                    })
-            }, (err) => { console.log('error on client open:', err); });
+function connectInteractive(requestor, token) {
+    //check that we have a game configured to run 
+    getGameVersionFromDB().then((version) => { 
+        openGameConnection(requestor, version, token);
     }, (err) => {
-        createInteractiveVersionConfigurationWindow(event, token);
+        requestVersionID(event, token);
     });
 
 };
 
-//default beam board sizes
-const boardSize = [
-    { size: 'large', dimensions: { x: 80, y: 20 } },
-    { size: 'medium', dimensions: { x: 45, y: 25 } },
-    { size: 'small', dimensions: { x: 30, y: 40 } }
-]
-
-//this will basically reflow your buttons for you if you don't want to create your own position array
-function flowControls(amount, width, height) {
-
-    var positions = [];
-    for (var j = 0; j < amount; j++) positions.push([]);
-    boardSize.forEach((board) => {
-        var maxControlsPerRow = Math.floor(board.dimensions.x / width)
-        var reqRows = Math.ceil(amount / maxControlsPerRow);
-        if (reqRows * height > board.dimensions.y) {
-            throw (Error(`Controls do not fit on board '${board.size}'`));
-        }
-        var controlsPerRow = Math.ceil(amount / reqRows);
-        var lastRowControls = reqRows > 1 ? amount % controlsPerRow : controlsPerRow;
-        var fullRowXOffset = Math.floor((board.dimensions.x - (controlsPerRow * width)) / 2);
-        var lastRowXOffset = Math.floor((board.dimensions.x - (lastRowControls * width)) / 2);
-        //console.log(board.size, reqRows, controlsPerRow, lastRowControls, fullRowXOffset, lastRowXOffset);
-        for (var i = 0; i < amount; i++) {
-            var row = Math.ceil((i + 1) / controlsPerRow);
-            var offset = row == reqRows ? lastRowXOffset : fullRowXOffset;
-            var rowPos = i % controlsPerRow
-            positions[i].push({
-                size: board.size,
-                width: width,
-                height: height,
-                x: offset + rowPos * width,
-                y: (row - 1) * height
-            })
-        }
+function openGameConnection(requestor, version, authToken) {
+    client.open({
+        authToken: authToken,
+        versionId: version
     })
-    return (positions);
+    .then(() => client.synchronizeScenes())
+    .then((res) => client.ready(true))
+    .then(() => setupBoard('default', buttonDef.defaultButtons))
+    .then((controls) => requestor.send('interactiveConnectionEstablished'))
+    .catch((err) => console.log('Error connecting to game: ', err.message?err.message:err));
 }
 
-function makeButtons(buttons) {
-    const controls = [];
-    buttons.counter = [];
-    buttons.pushers = [];
-    buttons.totPushers = 0;
-    const amount = buttons.names.length;
-    // this uses flowcontrols to create the array, you can build your own array
-    var positions = flowControls(amount, 10, 5);
-    for (let i = 0; i < amount; i++) {
-        controls.push({
-            controlID: `${i}`,
-            kind: "button",
-            text: buttons.names[i],
-            cost: 0,
-            position: positions[i]
-        })
-        buttons.counter.push(0);
-        buttons.pushers.push([]);
-    }
-    return controls;
-}
-
-
+//this will set up the board, 
 function setupBoard(sceneID, buttons) {
     return new Promise((resolve, reject) => {
         const scene = client.state.getScene(sceneID);
@@ -164,10 +72,62 @@ function setupBoard(sceneID, buttons) {
     });
 }
 
+//default beam board sizes, needed for flowControls
+const boardSize = [
+    { size: 'large', dimensions: { x: 80, y: 20 } },
+    { size: 'medium', dimensions: { x: 45, y: 25 } },
+    { size: 'small', dimensions: { x: 30, y: 40 } }
+]
+
+//this will basically reflow your buttons for you if you don't want to create your own position array
+function flowControls(a, w, h) {
+    var pos = [];
+    for (var j = 0; j < a; j++) pos.push([]);
+    boardSize.forEach((b) => {
+        var x = b.dimensions.x; var y = b.dimensions.y; var c = Math.ceil; var f = Math.floor;
+        var rc = c(a / f(b.dimensions.x / w));
+        if (rc * h > y) {
+            throw (Error(`Controls do not fit on board '${b.size}'`));
+        }
+        var cpr = c(a / rc);
+        var lrc = rc > 1 ? a % cpr : cpr;
+        var xOff = f((x - (cpr * w)) / 2);
+        for (var i = 0; i < a; i++) {
+            pos[i].push({
+                size: b.size, width: w,height: h,
+                x: (c((i + 1) / cpr) == rc ? f((x - (lrc * w)) / 2) : xOff) + i % cpr * w,
+                y: (c((i + 1) / cpr) - 1) * h
+            })
+        }
+    })
+    return (pos);
+}
+
+//This will create buttons from an array 
+function makeButtons(buttons) {
+    const controls = [];
+    const amount = buttons.length;
+    // this uses flowcontrols to create the array, you can build your own array
+    var positions = flowControls(amount, 10, 5);
+    for (let i = 0; i < amount; i++) {
+        controls.push({
+            controlID: buttons[i].name,
+            kind: "button",
+            text: buttons[i].name,
+            cost: buttons[i].cost ? buttons[i].cost : 0,
+            position: positions[i]
+        })
+        buttons.counter.push(0);
+        buttons.pushers.push([]);
+    }
+    return controls;
+}
+
+
 //function to handle button events
 function handleControl(buttons, participant, control, transactionID) {
     return new Promise((resolve, reject) => {
-        control.setCooldown(buttons.cooldowns ? buttons.cooldowns[control.controlID] : 1000)
+        control.setCooldown(buttons.find((b) => b.name).cooldown ? buttons.cooldowns[control.controlID] : 1000)
             .then(() => {
                 console.log(`${participant.username} pushed ${control.controlID}`);
 
@@ -204,11 +164,11 @@ function getGameVersionFromDB() {
 }
 
 
-function createInteractiveVersionConfigurationWindow(event, token) {
+function requestVersionID(event, token) {
     var versionWindow = new BrowserWindow({ width: 600, height: 300 });
     versionWindow.setMenuBarVisibility(false);
     versionWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'version.html'),
+        pathname: path.join(__dirname, 'data', 'version.html'),
         protocol: 'file',
         slashes: true
     }))
@@ -220,6 +180,36 @@ function createInteractiveVersionConfigurationWindow(event, token) {
     ipcMain.on('setOauthClientInfo', (event, versionID) => {
         var data = { version: versionID };
         db.push('/GameVersion', data, true);
-        connectInteractive(event, token);
+        openGameConnection(event, versionID, token);
     })
 }
+
+//console log joining participants
+var participants = [];
+client.state.on('participantJoin', (participant) => {
+    participants.push(participant);
+    console.log(`${participant.username}(${participant.sessionID}) Joined`);
+});
+
+//console log leaving participants
+client.state.on('participantLeave', (sessionID) => {
+    console.log(`${participants.find((p) => p.sessionID == sessionID).username} Left`);
+    participants.splice(participants.findIndex((p) => p.sessionID == sessionID), 1);
+});
+
+//add events for windows that want to subscribe
+ipcMain.on('participantSubscribe', (event) => {
+    client.state.on('participantJoin', (participant) => {
+        event.sender.send('participantJoin', participant);
+    });
+
+    client.state.on('participantLeave', (sessionID) => {
+        event.sender.send('participantLeave', sessionID);
+    });
+})
+
+// when windows want to get button events they call this event so we can add a reference to the array
+var pushSubscribers = [];
+ipcMain.on('subscribeToPushers', (event) => {
+    pushSubscribers.push(event.sender);
+})
