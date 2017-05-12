@@ -6,8 +6,15 @@ const JsonDB = require('node-json-db');
 const BrowserWindow = require('electron').BrowserWindow;
 const url = require('url');
 const path = require('path');
+const fs = require('fs');
 
 const delay = interactive.delay;
+
+var buttonDef;
+fs.readFile('./buttons.json', (err, data) => {
+    if (err) console.log(err);
+    buttonDef = JSON.parse(data);    
+})
 
 var db = new JsonDB("GameData", true, true) // TODO: set human readable to false
 
@@ -66,7 +73,7 @@ function connectInteractive(event, token) {
             .then(() => {
                 client.synchronizeScenes()
                     .then((res) => { return client.ready(true) })
-                    .then(() => setupBoard('default', defaultButtons))
+                    .then(() => setupBoard('default', buttonDef.defaultButtons))
                     .then((controls) => {
                         event.sender.send('interactiveConnectionEstablished')
                     })
@@ -128,7 +135,7 @@ function makeButtons(buttons) {
         controls.push({
             controlID: `${i}`,
             kind: "button",
-            text: buttons.names[i] + '\n0',
+            text: buttons.names[i],
             cost: 0,
             position: positions[i]
         })
@@ -201,7 +208,7 @@ function createInteractiveVersionConfigurationWindow(event, token) {
     var versionWindow = new BrowserWindow({ width: 600, height: 300 });
     versionWindow.setMenuBarVisibility(false);
     versionWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'oauth.html'),
+        pathname: path.join(__dirname, 'version.html'),
         protocol: 'file',
         slashes: true
     }))

@@ -25,8 +25,6 @@ function oauthRequest(scopes) {
   return new Promise((resolve, reject) => {
     getOauthClientFromDB().then((authInfo) => {
 
-
-
       const windowParams = {
         alwaysOnTop: true,
         autoHideMenuBar: true,
@@ -39,7 +37,8 @@ function oauthRequest(scopes) {
         scope: scopes
       };
 
-      const opinionOauth = electronOauth2(authInfo, windowParams);
+      const opinionOauth = electronOauth2(authInfo.Oauth2, windowParams);
+
 
       //check and see if we have a refresh token available
       getRefreshTokenFromDB(scopes)
@@ -52,6 +51,7 @@ function oauthRequest(scopes) {
               resolve(token);
             }, (err) => { reject(err); });
         }, () => {
+
           // we need to authenticate, let's get an access token
           opinionOauth.getAccessToken(options)
             .then((token) => {
@@ -68,7 +68,7 @@ function oauthRequest(scopes) {
 function getOauthClientFromDB(scopes) {
   return new Promise((resolve, reject) => {
     try {
-      var client = db.getData("/OauthClient")
+      var client = db.getData("/OauthAuthentication")
       if (client) {
         resolve(client);
       } else {
@@ -122,8 +122,8 @@ function createOauthClientConfigurationWindow(scopes) {
   });
 
   ipcMain.on('setOauthClientInfo', (event, details) => {
-    data.Oauth2.clientId = details.clientId;
-    data.Oauth2.clientSecret = details.clientSecret;
+    data.Oauth2.clientId = details.id;
+    data.Oauth2.clientSecret = details.secret;
     db.push('/OauthAuthentication', data)
     oauthRequest(scopes);
   })

@@ -6,5 +6,5 @@ $('#saveButton').on('click', () => {
     var secret=$('#clientSecret').val();
     ipcRenderer.send('setOauthClientInfo', {id: id, secret: secret});
     var window = remote.getCurrentWindow();
-    window.close();
+    //window.close();
 })
