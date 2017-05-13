@@ -4,7 +4,7 @@
 var remote = require('electron').remote;
 var Menu = remote.require('electron').Menu;
 var ipcRenderer = require('electron').ipcRenderer;
-var https = require('https');
+
 
 var menu = Menu.buildFromTemplate([
     {

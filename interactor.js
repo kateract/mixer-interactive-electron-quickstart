@@ -36,7 +36,7 @@ function connectInteractive(requestor, token) {
     getGameVersionFromDB().then((version) => { 
         openGameConnection(requestor, version, token);
     }, (err) => {
-        requestVersionID(event, token);
+        requestVersionID(requestor, token);
     });
 
 };
@@ -117,8 +117,7 @@ function makeButtons(buttons) {
             cost: buttons[i].cost ? buttons[i].cost : 0,
             position: positions[i]
         })
-        buttons.counter.push(0);
-        buttons.pushers.push([]);
+
     }
     return controls;
 }
@@ -164,11 +163,12 @@ function getGameVersionFromDB() {
 }
 
 
-function requestVersionID(event, token) {
+function requestVersionID(requestor, token) {
     var versionWindow = new BrowserWindow({ width: 600, height: 300 });
     versionWindow.setMenuBarVisibility(false);
+    //versionWindow.webContents.openDevTools();
     versionWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'data', 'version.html'),
+        pathname: path.join(__dirname, 'plugin', 'version.html'),
         protocol: 'file',
         slashes: true
     }))
@@ -177,9 +177,10 @@ function requestVersionID(event, token) {
         versionWindow = null;
     });
 
-    ipcMain.on('setOauthClientInfo', (event, versionID) => {
+    ipcMain.on('setVersionInfo', (event, versionID) => {
         var data = { version: versionID };
         db.push('/GameVersion', data, true);
+        versionWindow.close();
         openGameConnection(event, versionID, token);
     })
 }
