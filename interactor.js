@@ -96,7 +96,7 @@ function flowControls(a, w, h) {
             pos[i].push({
                 size: b.size, width: w,height: h,
                 x: (c((i + 1) / cpr) == rc ? f((x - (lrc * w)) / 2) : xOff) + i % cpr * w,
-                y: (c((i + 1) / cpr) - 1) * h
+                y: (c((i + 1) / cpr) - 1) * h 
             })
         }
     })
@@ -126,7 +126,7 @@ function makeButtons(buttons) {
 //function to handle button events
 function handleControl(buttons, participant, control, transactionID) {
     return new Promise((resolve, reject) => {
-        control.setCooldown(buttons.find((b) => b.name).cooldown ? buttons.cooldowns[control.controlID] : 1000)
+        control.setCooldown(buttons.find((b) => b.name).cooldown ? buttons.find((b) => b.name).cooldown : 1000)
             .then(() => {
                 console.log(`${participant.username} pushed ${control.controlID}`);
 
