@@ -106,6 +106,10 @@ function createOauthClientConfigurationWindow() {
 
     var oauthWindow = new BrowserWindow({ width: 800, height: 600 });
     oauthWindow.setMenuBarVisibility(false);
+    oauthWindow.on('will-navigate', (e, url) => {
+      e.preventDefault();
+      require('electron').shell.openExternal(url);
+    })
     //oauthWindow.webContents.openDevTools();
     oauthWindow.loadURL(url.format({
       pathname: path.join(__dirname, 'oauth.html'),

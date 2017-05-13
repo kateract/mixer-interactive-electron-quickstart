@@ -166,7 +166,10 @@ function getGameVersionFromDB() {
 function requestVersionID(requestor, token) {
     var versionWindow = new BrowserWindow({ width: 600, height: 300 });
     versionWindow.setMenuBarVisibility(false);
-    //versionWindow.webContents.openDevTools();
+    versionWindow.on('will-navigate', (e, url) => {
+      e.preventDefault();
+      require('electron').shell.openExternal(url);
+    })
     versionWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'plugin', 'version.html'),
         protocol: 'file',
