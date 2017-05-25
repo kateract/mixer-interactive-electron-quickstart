@@ -8,6 +8,6 @@ $('#saveButton').on('click', () => {
     ipcRenderer.send('setOauthClientInfo', {id: id, secret: secret});
 })
 
-$('#beamoauth').on('click', () => {
-    shell.openExternal('https://beam.pro/lab/oauth');
+$('#mixerOauth').on('click', () => {
+    shell.openExternal('https://mixer.com/lab/oauth');
 })

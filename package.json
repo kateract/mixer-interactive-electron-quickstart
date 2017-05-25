@@ -1,7 +1,7 @@
 {
-  "name": "beam-interactive-electron-quickstart",
+  "name": "mixer-interactive-electron-quickstart",
   "version": "1.0.0",
-  "description": "A minimal Beam Interactive2 Electron application",
+  "description": "A minimal Mixer Interactive2 Electron application",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

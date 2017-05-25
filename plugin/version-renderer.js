@@ -8,6 +8,6 @@ $('#saveButton').on('click', () => {
     ipcRenderer.send('setVersionInfo', version);
 })
 
-$('#beamstudio').on('click', () => {
-    shell.openExternal('https://beam.pro/i/studio');
+$('#mixerstudio').on('click', () => {
+    shell.openExternal('https://mixer.com/i/studio');
 })

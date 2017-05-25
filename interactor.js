@@ -72,7 +72,7 @@ function setupBoard(sceneID, buttons) {
     });
 }
 
-//default beam board sizes, needed for flowControls
+//default mixer board sizes, needed for flowControls
 const boardSize = [
     { size: 'large', dimensions: { x: 80, y: 20 } },
     { size: 'medium', dimensions: { x: 45, y: 25 } },

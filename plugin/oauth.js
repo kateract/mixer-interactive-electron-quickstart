@@ -98,8 +98,8 @@ function createOauthClientConfigurationWindow() {
     var data = {
       "clientId": "",
       "clientSecret": "",
-      "authorizationUrl": "https://beam.pro/oauth/authorize",
-      "tokenUrl": "https://beam.pro/api/v1/oauth/token",
+      "authorizationUrl": "https://mixer.com/oauth/authorize",
+      "tokenUrl": "https://mixer.com/api/v1/oauth/token",
       "useBasicAuthorizationHeader": false,
       "redirectUri": "http://localhost"
     }
