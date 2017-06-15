@@ -10,7 +10,7 @@ const BrowserWindow = electron.BrowserWindow;
 const path = require('path');
 const url = require('url');
 
-var db = new JsonDB("./data/GameData", true, true) // TODO: set human readable to false
+var db = new JsonDB("./data/AuthData", true, true) // TODO: set human readable to false
 
 ipcMain.on('oauthRequest', (event, scopes) => {
   oauthRequest(scopes)
