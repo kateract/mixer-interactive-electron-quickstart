@@ -1,3 +1,4 @@
 node_modules
 config/default.json
-data/GameData.json
+data/VersionData.json
+data/AuthData.json

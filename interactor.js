@@ -16,7 +16,7 @@ fs.readFile('./buttons.json', (err, data) => {
     buttonDef = JSON.parse(data.toString());    
 })
 
-var db = new JsonDB("./data/GameData", true, true) // TODO: set human readable to false
+var db = new JsonDB("./data/VersionData", true, true) // TODO: set human readable to false
 
 //set web socket for interactive client
 interactive.setWebSocket(ws);
@@ -33,7 +33,9 @@ ipcMain.on('connectInteractive', (event, token) => { connectInteractive(event.se
 
 function connectInteractive(requestor, token) {
     //check that we have a game configured to run 
+    console.log('opening interactive connection');
     getGameVersionFromDB().then((version) => { 
+        console.log('studio version found');
         openGameConnection(requestor, version, token);
     }, (err) => {
         requestVersionID(requestor, token);
@@ -46,12 +48,16 @@ function openGameConnection(requestor, version, authToken) {
         authToken: authToken,
         versionId: version
     })
-    .then(() => client.synchronizeScenes())
+    .catch(err => console.log(err.message));
+}
+
+client.on('open', () => {
+    client.synchronizeScenes()
     .then((res) => client.ready(true))
     .then(() => setupBoard('default', buttonDef.defaultButtons))
     .then((controls) => requestor.send('interactiveConnectionEstablished'))
     .catch((err) => console.log('Error connecting to game: ', err.message?err.message:err));
-}
+})
 
 //this will set up the board, 
 function setupBoard(sceneID, buttons) {
